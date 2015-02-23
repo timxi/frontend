@@ -1,26 +1,13 @@
-define([
-    'knockout',
-    'underscore',
-    'config',
-    'fixed-containers',
-    'dynamic-containers'
-], function(
-    ko,
-    _,
-    pageConfig,
-    fixedContainers,
-    dynamicContainers
-){
+define(function() {
+    function inferPriority () {
+        var priority = window.location.pathname.match(/^\/?([^\/]+)/);
+        if (priority && priority[1] !== 'editorial') {
+            return priority[1];
+        }
+    }
+
     var CONST = {
         editions: ['uk', 'us', 'au'],
-
-        types: dynamicContainers.concat(fixedContainers).concat([
-            {name: 'nav/list'},
-            {name: 'nav/media-list'},
-            {name: 'news/most-popular'}
-        ]),
-
-        typesDynamic: dynamicContainers,
 
         headlineLength: 200,
         restrictedHeadlineLength: 90,
@@ -61,11 +48,6 @@ define([
         sparksRefreshMs:       300000,
         pubTimeRefreshMs:      30000,
 
-        frontAgeAlertMs: {
-            front:      60000 * 2 * (pageConfig.highFrequency || 1),
-            editorial:  60000 * 2 * (pageConfig.standardFrequency || 5),
-            commercial: 60000 * 2 * (pageConfig.lowFrequency || 60)
-        },
         highFrequencyPaths:    ['uk', 'us', 'au', 'uk/sport', 'us/sport', 'au/sport'],
 
         mainDomain:            'www.theguardian.com',
@@ -73,6 +55,8 @@ define([
         apiBase:               '',
         apiSearchBase:         '/api/proxy',
         apiSearchParams:       'show-elements=video&show-tags=all&show-fields=internalContentCode,isLive,firstPublicationDate,scheduledPublicationDate,headline,trailText,byline,thumbnail,liveBloggingNow',
+
+        frontendApiBase:       'frontend',
 
         imageCdnDomain:        'guim.co.uk',
         previewBase:           'http://preview.gutools.co.uk',
@@ -87,12 +71,29 @@ define([
         sparksBatchQueue:      15
     };
 
-    return {
+    var vars = {
         CONST: CONST,
         model: undefined,
-        priority: pageConfig.priority === 'editorial' ? undefined : pageConfig.priority,
+        priority: inferPriority(),
         state: {
             config: {}
+        },
+        update: function (res) {
+            vars.CONST.types = res.defaults.dynamicContainers.concat(res.defaults.fixedContainers).concat([
+                {name: 'nav/list'},
+                {name: 'nav/media-list'},
+                {name: 'news/most-popular'}
+            ]);
+
+            vars.CONST.typesDynamic = res.defaults.dynamicContainers;
+
+            vars.CONST.frontAgeAlertMs = {
+                front:      60000 * 2 * (res.defaults.highFrequency || 1),
+                editorial:  60000 * 2 * (res.defaults.standardFrequency || 5),
+                commercial: 60000 * 2 * (res.defaults.lowFrequency || 60)
+            };
         }
     };
+
+    return vars;
 });
