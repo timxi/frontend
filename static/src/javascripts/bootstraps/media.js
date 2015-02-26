@@ -12,6 +12,7 @@ define([
     'common/utils/mediator',
     'common/utils/url',
     'common/modules/analytics/beacon',
+    'common/modules/audio/enhanced-audio',
     'common/modules/commercial/build-page-targeting',
     'common/modules/component',
     'common/modules/ui/images',
@@ -33,6 +34,7 @@ define([
     mediator,
     urlUtils,
     beacon,
+    EnhancedAudio,
     buildPageTargeting,
     Component,
     images,
@@ -261,6 +263,9 @@ define([
                         initEndSlate(player, endSlateUri);
                     }
                 } else {
+
+                    funkyAudio(player);
+
                     player.playlist({
                         mediaType: 'audio',
                         continuous: false
@@ -354,6 +359,10 @@ define([
         }
         initMoreInSection();
         initMostViewedMedia();
+    }
+
+    function funkyAudio(player) {
+        new EnhancedAudio(player);
     }
 
     return {
